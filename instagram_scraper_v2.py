@@ -18,10 +18,12 @@ nest_asyncio.apply()
 class InstagramPost(BaseModel):
     user_name: str
     post_hashtags: List[str]
-    likes_count: int
+    likes_count: int | None
     post_link: str
     post_caption: str
     image_description: str
+    comments_count: int | None
+    repost_count: int | None
 
 
 class InstagramScrapeResults(BaseModel):
@@ -55,6 +57,7 @@ class InstagramScraperV2:
         agent = Agent(
             task=task_prompt,
             llm=ChatGoogle(model=self.model_name, api_key=self.api_key),
+            use_thinking=True,
             output_model_schema=InstagramScrapeResults,
             use_vision=True,
         )
