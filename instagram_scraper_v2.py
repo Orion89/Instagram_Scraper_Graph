@@ -8,7 +8,7 @@ from browser_use import Agent, ChatGoogle
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from instagram_prompts import get_instagram_scrape_prompt
+from prompts.instagram_prompts import get_instagram_scrape_prompt
 
 # Configuración para entornos interactivos (Notebooks)
 nest_asyncio.apply()
@@ -85,10 +85,21 @@ async def run_standalone_scrape(hashtag="ia", n=5):
     df, history = await scraper.scrape_hashtag(hashtag=hashtag, n_results=n)
 
     if not df.empty:
-        output_file = f"scrape_results_{hashtag}.csv"
+        # Carpeta de salida y ruta del archivo
+        data_dir = "data"
+        os.makedirs(data_dir, exist_ok=True)
+        output_file = os.path.join(data_dir, f"scrape_results_{hashtag}.csv")
+
+        # Si ya existen resultados previos, los cargamos y concatenamos los nuevos
+        if os.path.exists(output_file):
+            print(f"Cargando resultados anteriores de {output_file}...")
+            existing_df = pd.read_csv(output_file)
+            df = pd.concat([existing_df, df], ignore_index=True)
+            print(f"Nuevos resultados agregados. Total: {len(df)} posts.")
+
         df.to_csv(output_file, index=False, encoding="utf-8-sig")
-        print(f"\nExtracción completada. {len(df)} posts guardados en {output_file}")
-        print(df.head())
+        print(f"\nExtracción completada. Datos guardados en {output_file}")
+        print(df.tail())
     else:
         print("\nLa extracción no generó datos.")
 

@@ -146,7 +146,7 @@ class InstagramGraph:
             self.df[self.hashtag_col] = self.df[self.hashtag_col].apply(_parse_hashtags)
 
     # cleans and formats dataframe
-    def cleaning(self):
+    def clean_data(self):
         """
         Cleans and formats the dataframe.
         """
@@ -164,13 +164,13 @@ class InstagramGraph:
         return self.df
 
     # extracts hashtags from any string returning list of hashtags
-    def getHashtag(self, _string):
+    def get_hashtag(self, text):
 
         # splits string into list and appends unique hashtags into a new list
         hashtags = [
             hashtag
             for hashtag in set(
-                [token for token in _string.split() if token.startswith("#")]
+                [token for token in text.split() if token.startswith("#")]
             )
         ]
 
@@ -196,7 +196,7 @@ class InstagramGraph:
             return np.nan
 
     # converts list of strings to lemma (if applicable) returning list of lemmas
-    def getHashtagLemma(self, hashtags):
+    def get_hashtag_lemma(self, hashtags):
 
         # create a spacy document using hashtags as an argument
         doc = self.nlp(" ".join(hashtags))
@@ -217,20 +217,20 @@ class InstagramGraph:
         return list(set(tokens))
 
     # gets a users post count that exists in the data
-    def getUserpostcount(self, user):
+    def get_user_post_count(self, user):
 
         return self.user_count_dict.get(user, 0)
 
     # gets a users median hashtag use in the data
-    def getUserhashtagcount(self, user):
+    def get_user_hashtag_count(self, user):
 
         return self.user_hashtag_count_dict.get(user, 0)
 
     # gets the language of the string
-    def getLanguage(self, _string):
+    def get_language(self, text):
 
         try:
-            return ld.detect(_string)
+            return ld.detect(text)
         except:
             return np.nan
 
@@ -337,7 +337,7 @@ class InstagramGraph:
         return
 
     # gets a list of hashtag lists from the dataset
-    def getBatches(self, additional_stopwords=[]):
+    def get_batches(self, additional_stopwords=[]):
 
         # if no extra stopwords are specificed we use the defalut stop word list
         if len(additional_stopwords) == 0:
@@ -348,7 +348,7 @@ class InstagramGraph:
             self.current_stopwords = self.default_stopwords + additional_stopwords
 
         # function that iterates through list input and removes any stopwords
-        def _removestop(words):
+        def _remove_stop(words):
             if not isinstance(words, list):
                 return []
 
@@ -363,7 +363,7 @@ class InstagramGraph:
             return cleaned_words
 
         # apply function to hashtag column
-        df_nostop = self.target[self.target.columns[0]].map(_removestop)
+        df_nostop = self.target[self.target.columns[0]].map(_remove_stop)
 
         # create new list of lists containing hashtags
         batch = [[df_nostop.iloc[i]][0] for i in range(len(df_nostop.index))]
@@ -371,7 +371,7 @@ class InstagramGraph:
         return batch
 
     # calculates the edges and nodes that exist in the list of hashtag lists
-    def getEdgesNodes(self, batches, min_frequency):
+    def get_edges_nodes(self, batches, min_frequency):
 
         # ranks hashtags in alphabetical order
         def _ranked_topics(batches):
@@ -472,7 +472,7 @@ class InstagramGraph:
         return
 
     # build the graph using the edge and node data
-    def getGraph(self):
+    def get_graph(self):
 
         if not hasattr(self, "edge_df") or self.edge_df.empty:
             return nx.Graph()
@@ -508,22 +508,22 @@ class InstagramGraph:
     """
 
     # generate all the features we need
-    def getFeatures(self, translate=False, lemma=False):
+    def get_features(self, translate=False, lemma=False):
 
         self.translate = translate
 
         if self.translate == True:
             print("Attempting to identify language...")
 
-            # detect language using getLanguage method
-            self.df["language"] = self.df[self.post_col].map(self.getLanguage)
+            # detect language using get_language method
+            self.df["language"] = self.df[self.post_col].map(self.get_language)
 
             # get language split as a class dictionary attribute
             self.language_split = dict(self.df["language"].value_counts())
             print("Languages identified...")
 
-        # call cleaning method
-        self.df = self.cleaning()
+        # call clean_data method
+        self.df = self.clean_data()
         print("Data cleaned...")
 
         print("Attempting to extract hashtags...")
@@ -531,7 +531,7 @@ class InstagramGraph:
         if self.hashtag_col in self.df.columns:
             self.df["hashtags"] = self.df[self.hashtag_col]
         else:
-            self.df["hashtags"] = self.df[self.post_col].map(self.getHashtag)
+            self.df["hashtags"] = self.df[self.post_col].map(self.get_hashtag)
 
         # drop any rows in the dataframe that don't have any hashtags
         self.df.dropna(subset=["hashtags"], inplace=True)
@@ -542,7 +542,7 @@ class InstagramGraph:
         if lemma:
             print("Attempting to lemmatise hashtags...")
             # lemmatise any hashtags to new column
-            self.df["hashtags_lemma"] = self.df["hashtags"].map(self.getHashtagLemma)
+            self.df["hashtags_lemma"] = self.df["hashtags"].map(self.get_hashtag_lemma)
 
             if self.hashtag_count > 0:
                 lemma_conversion = self.lemma_count / self.hashtag_count
@@ -563,12 +563,12 @@ class InstagramGraph:
 
         # get user post count as new column
         self.df["user_post_count"] = self.df[self.user_col].map(
-            lambda x: self.getUserpostcount(x)
+            lambda x: self.get_user_post_count(x)
         )
 
         # get median user post count as new column
         self.df["user_median_hashtag_count"] = self.df[self.user_col].map(
-            lambda x: self.getUserhashtagcount(x)
+            lambda x: self.get_user_hashtag_count(x)
         )
 
         print("Running EDA and generating plots...")
@@ -578,7 +578,7 @@ class InstagramGraph:
         return
 
     # select the data we want to include
-    def selectData(self, english=True, remove_verified=True, max_posts=3, lemma=False):
+    def select_data(self, english=True, remove_verified=True, max_posts=3, lemma=False):
 
         # retain some attributes
         self._filterenglish = english
@@ -618,16 +618,16 @@ class InstagramGraph:
         return
 
     # create edges and nodes and add these to an instance of a graph object
-    def buildGraph(self, additional_stopwords=[], min_frequency=5):
+    def build_graph(self, additional_stopwords=[], min_frequency=5):
 
-        # call getBatches method passing any contextual stop words as an arg
-        batches = self.getBatches(additional_stopwords)
+        # call get_batches method passing any contextual stop words as an arg
+        batches = self.get_batches(additional_stopwords)
 
-        # call getEdgesNodes mnethod taking max frequency as an arg
-        self.getEdgesNodes(batches, min_frequency)
+        # call get_edges_nodes mnethod taking max frequency as an arg
+        self.get_edges_nodes(batches, min_frequency)
 
-        # call the getGraph method and build the graph
-        self.G = self.getGraph()
+        # call the get_graph method and build the graph
+        self.G = self.get_graph()
 
         if self.G.number_of_nodes() == 0:
             print("Graph build failed: no nodes/edges.")
@@ -690,7 +690,7 @@ class InstagramGraph:
         return
 
     # plot the graph using plotly
-    def plotGraph(
+    def plot_graph(
         self,
         sizing=75,
         node_size="adjacency_frequency",
@@ -879,7 +879,7 @@ class InstagramGraph:
         return
 
     # sunburst that plots communities and relevant hahstags
-    def plotCommunity(self, colorscale=False):
+    def plot_community(self, colorscale=False):
 
         if not hasattr(self, "node_df") or self.node_df.empty:
             print("Nothing to plot.")
@@ -927,7 +927,7 @@ class InstagramGraph:
         return
 
     # save map / sunburst plot locally as html file
-    def savePlot(self, plot="map"):
+    def save_plot(self, plot="map"):
 
         # get current time
         date = str(pd.to_datetime(datetime.datetime.now())).split(" ")[0]
@@ -959,7 +959,7 @@ class InstagramGraph:
         return print("Plot saved.")
 
     # save csv output
-    def saveTables(self):
+    def save_tables(self):
 
         date = str(pd.to_datetime(datetime.datetime.now())).split(" ")[0]
 

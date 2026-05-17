@@ -13,16 +13,16 @@ This project provides a pipeline to:
 
 ### 1. InstagramScraper (`InstagramScraper.py` / `.ipynb`)
 Handles data collection.
-- `logIn()`: Authenticates with Instagram using Selenium.
-- `getLinks()`: Retrieves post URLs for a given hashtag.
-- `getData()`: Multi-threaded scraping of post details (caption, user, tags, location, etc.).
+- `log_in()`: Authenticates with Instagram using Selenium.
+- `get_links()`: Retrieves post URLs for a given hashtag.
+- `get_data()`: Multi-threaded scraping of post details (caption, user, tags, location, etc.).
 
 ### 2. InstagramGraph (`InstagramGraph.py` / `.ipynb`)
 Handles data processing and network analysis.
-- `getFeatures()`: NLP-based feature extraction (supports translation).
-- `selectData()`: Filtering and cleaning (e.g., removing bots/verified accounts).
-- `buildGraph()`: Constructs a NetworkX graph from hashtag co-occurrences.
-- `plotGraph()` / `plotCommunity()`: Interactive visualizations of the hashtag network.
+- `get_features()`: NLP-based feature extraction (supports translation).
+- `select_data()`: Filtering and cleaning (e.g., removing bots/verified accounts).
+- `build_graph()`: Constructs a NetworkX graph from hashtag co-occurrences.
+- `plot_graph()` / `plot_community()`: Interactive visualizations of the hashtag network.
 
 ## Technologies
 - **Scraping**: `selenium`, `beautifulsoup4`, `requests`
@@ -55,9 +55,9 @@ python -m spacy download en_core_web_sm
     ```python
     from InstagramScraper import InstagramScraper
     scraper = InstagramScraper()
-    scraper.logIn()
-    scraper.getLinks(hashtag='nature', n=100)
-    df = scraper.getData()
+    scraper.log_in()
+    scraper.get_links(hashtag='nature', n=100)
+    df = scraper.get_data()
     # Save to CSV
     df.to_csv('nature_posts.csv', index=False)
     ```
@@ -66,10 +66,10 @@ python -m spacy download en_core_web_sm
     ```python
     from InstagramGraph import InstagramGraph
     graph = InstagramGraph(csv='nature_posts.csv')
-    graph.getFeatures()
-    graph.selectData()
-    graph.buildGraph()
-    graph.plotGraph()
+    graph.get_features()
+    graph.select_data()
+    graph.build_graph()
+    graph.plot_graph()
     ```
 
 ## Development Conventions

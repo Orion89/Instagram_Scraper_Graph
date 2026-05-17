@@ -54,7 +54,7 @@ import getpass
 
 
 
-class InstagramScraper():
+class InstagramScraper:
 
     """
     Class that allows you to scrape the content of Instagram posts, either
@@ -64,11 +64,11 @@ class InstagramScraper():
 
     """
 
-    def __init__(self,driver_loc='/Users/sam/Desktop/Chromedriver/chromedriver'):
+    def __init__(self, driver_loc='/Users/sam/Desktop/Chromedriver/chromedriver'):
 
         self.driver_loc = driver_loc
 
-    def multithreadCompile(self,thread_count,iteration_list,func):
+    def multithread_compile(self, thread_count, iteration_list, func):
 
         """
         This function compiles the batched needed for mult-threadding
@@ -91,15 +91,15 @@ class InstagramScraper():
         jobs = [] #empty list for jobs
 
         #distribute iteration list to batches and append to jobs list
-        batches = [i.tolist() for i in np.array_split(iteration_list,thread_count)]
+        batches = [i.tolist() for i in np.array_split(iteration_list, thread_count)]
 
         for i in range(len(batches)):
 
-            jobs.append(threading.Thread(target=func,args=[batches[i]]))
+            jobs.append(threading.Thread(target=func, args=[batches[i]]))
 
         return jobs
 
-    def multithreadExecute(self,jobs):
+    def multithread_execute(self, jobs):
 
         """
 
@@ -127,7 +127,7 @@ class InstagramScraper():
 
         return
 
-    def getJson(self,url):
+    def get_json(self, url):
 
         """
         This function exracts a JSON style dictionary from the html for any
@@ -145,7 +145,7 @@ class InstagramScraper():
 
         page = urlopen(url).read() #read url
 
-        data=BeautifulSoup(page, 'html.parser') #get a BeautifulSoup object
+        data = BeautifulSoup(page, 'html.parser') #get a BeautifulSoup object
 
         body = data.find('body') #find body element
 
@@ -155,11 +155,11 @@ class InstagramScraper():
         raw = script.text.strip().replace('window._sharedData =', '').replace(';', '')
 
         #load string
-        json_data=json.loads(raw)
+        json_data = json.loads(raw)
 
         return json_data #return JSON dictonary
 
-    def userDetails(self):
+    def user_details(self):
 
         """
         Functions that capture log in details and logs user into Instagram
@@ -185,7 +185,7 @@ class InstagramScraper():
 
         return
 
-    def openWebdriver(self):
+    def open_webdriver(self):
 
         """
         Launches Chrome webdriver
@@ -208,7 +208,7 @@ class InstagramScraper():
 
         return driver
 
-    def closeWebdriver(self,driver):
+    def close_webdriver(self, driver):
 
         """
         Closes Chrome webdriver
@@ -227,7 +227,7 @@ class InstagramScraper():
 
         return
 
-    def instagramLogin(self,driver):
+    def instagram_login(self, driver):
 
         """
         Logs in to Instagram
@@ -286,7 +286,7 @@ class InstagramScraper():
 
         return driver
 
-    def setTarget(self):
+    def set_target(self):
 
         """
         Function that sets either a profile or a hashtag as a target
@@ -310,11 +310,11 @@ class InstagramScraper():
             #set hashtag
             hashtag = input('Which hashtag do you want to scrape posts for: ')
 
-            self.target_label = '#'+hashtag #retain hashtag as attribute
+            self.target_label = '#' + hashtag #retain hashtag as attribute
 
             tag_url = 'https://www.instagram.com/explore/tags/' #set base url
 
-            self._target = tag_url+hashtag #set url to scrape from
+            self._target = tag_url + hashtag #set url to scrape from
 
             return self._target #return url to scrape from
 
@@ -322,15 +322,15 @@ class InstagramScraper():
 
             profile = input('What profile do you want to scrape posts for: ')
 
-            self.target_label = '@'+profile #retain profile as attribute
+            self.target_label = '@' + profile #retain profile as attribute
 
             profile_url = 'https://www.instagram.com/' #set base url
 
-            self._target = profile_url+profile #set url to scrape from
+            self._target = profile_url + profile #set url to scrape from
 
             return self._target #return url to scrape from
 
-    def scrapeLinks(self,url):
+    def scrape_links(self, url):
 
         """
         Function that scrapes the links needed
@@ -372,7 +372,7 @@ class InstagramScraper():
 
             source = self.activedriver.page_source
 
-            data= BeautifulSoup(source, 'html.parser')
+            data = BeautifulSoup(source, 'html.parser')
 
             body = data.find('body')
 
@@ -382,7 +382,7 @@ class InstagramScraper():
 
                 if re.match("/p", link.get('href')):
 
-                    links.append('https://www.instagram.com'+link.get('href'))
+                    links.append('https://www.instagram.com' + link.get('href'))
 
                 else:
                     continue
@@ -403,10 +403,10 @@ class InstagramScraper():
             last_height = new_height
 
             #update on successful links scraped
-            print("Scraped ", len(links)," links, ", len(set(links)),' are unique')
+            print("Scraped ", len(links), " links, ", len(set(links)), ' are unique')
 
             #if n target met then while loop breaks
-            if len(set(links))>int(target):
+            if len(set(links)) > int(target):
                 break
 
         #links are saved as an attribute for the class instance
@@ -415,7 +415,7 @@ class InstagramScraper():
         #clear the screen and provide user feedback on performance
         clear_output()
 
-        print("Finished scraping links. Maxed out at ", len(links)," links, of which ", len(self._links),' are unique.')
+        print("Finished scraping links. Maxed out at ", len(links), " links, of which ", len(self._links), ' are unique.')
 
         print("\n")
 
@@ -423,12 +423,12 @@ class InstagramScraper():
 
         print("\n")
         # close driver
-        self.closeWebdriver(self.activedriver)
+        self.close_webdriver(self.activedriver)
 
         return
 
 
-    def postDate(self,data):
+    def post_date(self, data):
 
         """
         Function that gets the date of post
@@ -440,7 +440,7 @@ class InstagramScraper():
 
         return datetime.utcfromtimestamp(data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['taken_at_timestamp']).strftime('%Y-%m-%d %H:%M:%S')
 
-    def postUser(self,data):
+    def post_user(self, data):
 
         """
         Function that gets the username of the person who posted
@@ -451,7 +451,7 @@ class InstagramScraper():
         """
         return data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['owner']['username']
 
-    def postVerifiedUser(self,data):
+    def post_verified_user(self, data):
 
         """
         Function gets the verified status of the user
@@ -463,7 +463,7 @@ class InstagramScraper():
         return data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['owner']['is_verified']
 
 
-    def postLikes(self,data):
+    def post_likes(self, data):
 
         """
         Function that gets the number of likes the post received
@@ -475,7 +475,7 @@ class InstagramScraper():
 
         return data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_preview_like']['count']
 
-    def postVerifiedTags(self,data):
+    def post_verified_tags(self, data):
 
         """
         Function that gets the verified tags that a post contains
@@ -497,7 +497,7 @@ class InstagramScraper():
 
             verif.append(tag_end_point[i]['node']['user']['is_verified'])
 
-        df = pd.DataFrame({'Brand':entities,'Verified':verif})
+        df = pd.DataFrame({'Brand': entities, 'Verified': verif})
 
         df = df[df.Verified == True]
 
@@ -509,7 +509,7 @@ class InstagramScraper():
 
             return list(df.Brand)
 
-    def postUnverifiedTags(self,data):
+    def post_unverified_tags(self, data):
 
         """
         Function that gets the unverified tags a post contains
@@ -535,7 +535,7 @@ class InstagramScraper():
             verif.append(tag_end_point[i]['node']['user']['is_verified'])
 
         #DataFrame of verified / unverified tags
-        df = pd.DataFrame({'Tag':tags,'Verified':verif})
+        df = pd.DataFrame({'Tag': tags, 'Verified': verif})
 
         #subset on unverified tags
         df = df[df.Verified == False]
@@ -549,12 +549,12 @@ class InstagramScraper():
 
             return ''.join(list(df.Tag))
 
-    def postComment(self,data):
+    def post_comment(self, data):
 
         return data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_media_to_caption']['edges'][0]['node']['text']
 
     #get location of post
-    def postLocation(self,data):
+    def post_location(self, data):
 
         """
         Function that gets the post location if available
@@ -574,7 +574,7 @@ class InstagramScraper():
             return np.nan
 
     #get accessibility  / image data
-    def postAccessibility(self,data):
+    def post_accessibility(self, data):
 
         """
         Function that gets the post accessibility data if available
@@ -586,19 +586,19 @@ class InstagramScraper():
 
         try:
             try:
-                image = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['accessibility_caption'].replace('Image may contain: ','').replace(' and ',', ').replace('one or more ','')
+                image = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['accessibility_caption'].replace('Image may contain: ', '').replace(' and ', ', ').replace('one or more ', '')
 
                 return image
 
             except:
-                image = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges'][0]['node']['accessibility_caption'].replace('Image may contain: ','').replace(' and ',', ').replace('one or more ','')
+                image = data['entry_data']['PostPage'][0]['graphql']['shortcode_media']['edge_sidecar_to_children']['edges'][0]['node']['accessibility_caption'].replace('Image may contain: ', '').replace(' and ', ', ').replace('one or more ', '')
 
                 return image
         except:
             return np.nan
 
     #return original post link
-    def postLink(self,data):
+    def post_link(self, data):
 
         return data
 
@@ -607,25 +607,25 @@ class InstagramScraper():
     The three main methods that combine all above
     """
     #get user details, log in and initiate driver
-    def logIn(self):
+    def log_in(self):
 
-        self.userDetails()
+        self.user_details()
 
-        driver = self.openWebdriver()
+        driver = self.open_webdriver()
 
-        self.activedriver = self.instagramLogin(driver)
+        self.activedriver = self.instagram_login(driver)
 
         clear_output()
 
         print('Successfully logged in..ready to scrape')
 
     #get all the unique links
-    def getLinks(self):
+    def get_links(self):
 
-        return self.scrapeLinks(self.setTarget())
+        return self.scrape_links(self.set_target())
 
     #extract data and return dataframe
-    def getData(self):
+    def get_data(self):
 
         #create empty lists for posts and comments
         post_date_l = []
@@ -636,7 +636,7 @@ class InstagramScraper():
 
         post_likes_l = []
 
-        post_tags_v_l =[]
+        post_tags_v_l = []
 
         post_tags_u_l = []
 
@@ -648,28 +648,28 @@ class InstagramScraper():
 
         post_link_l = []
 
-        self._listStack = [post_date_l,post_user_l,post_verif_l,post_likes_l,post_tags_v_l,
-                      post_tags_u_l,post_l,post_location_l,post_insta_classifier_l,post_link_l]
+        self._listStack = [post_date_l, post_user_l, post_verif_l, post_likes_l, post_tags_v_l,
+                           post_tags_u_l, post_l, post_location_l, post_insta_classifier_l, post_link_l]
 
-        self._functionStack = [ self.postDate,
-                                    self.postUser,
-                                    self.postVerifiedUser,
-                                    self.postLikes,
-                                    self.postVerifiedTags,
-                                    self.postUnverifiedTags,
-                                    self.postComment,
-                                    self.postLocation,
-                                    self.postAccessibility,
-                                    self.postLink]
+        self._functionStack = [self.post_date,
+                               self.post_user,
+                               self.post_verified_user,
+                               self.post_likes,
+                               self.post_verified_tags,
+                               self.post_unverified_tags,
+                               self.post_comment,
+                               self.post_location,
+                               self.post_accessibility,
+                               self.post_link]
 
-        def extractData(links=self._links):
+        def extract_data(links=self._links):
 
             #loops through and calls each data collection function on each link
             for i in tqdm_notebook(range(len(links))):
 
                 try:
 
-                    data = self.getJson(links[i])
+                    data = self.get_json(links[i])
 
                     for function in self._functionStack:
 
@@ -681,7 +681,7 @@ class InstagramScraper():
 
                             except:
 
-                                 self._listStack[self._functionStack.index(function)].append(np.nan)
+                                self._listStack[self._functionStack.index(function)].append(np.nan)
                         else:
                             self._listStack[-1].append(self._functionStack[-1](links[i]))
 
@@ -700,26 +700,26 @@ class InstagramScraper():
 
         print("Executing...")
 
-        self.multithreadExecute(self.multithreadCompile(threads,self._links,extractData))
+        self.multithread_execute(self.multithread_compile(threads, self._links, extract_data))
 
         #set up intial data structure
-        df = pd.DataFrame({'searched_for':[self.target_label]*len(post_l),
-                           'post_link' :post_link_l,
-                           'post_date':post_date_l,
-                           'post':post_l,
-                           'user':post_user_l,
+        df = pd.DataFrame({'searched_for': [self.target_label] * len(post_l),
+                           'post_link': post_link_l,
+                           'post_date': post_date_l,
+                           'post': post_l,
+                           'user': post_user_l,
                            'user_verified_status': post_verif_l,
-                           'post_likes':post_likes_l,
-                           'post_verified_tags':post_tags_v_l,
-                           'post_unverified_tags':post_tags_u_l,
-                           'post_location':post_location_l,
-                           'post_image':post_insta_classifier_l,
+                           'post_likes': post_likes_l,
+                           'post_verified_tags': post_tags_v_l,
+                           'post_unverified_tags': post_tags_u_l,
+                           'post_location': post_location_l,
+                           'post_image': post_insta_classifier_l,
 
-                               })
+                           })
 
-        df.sort_values(by='post_date',ascending=False,inplace=True)
+        df.sort_values(by='post_date', ascending=False, inplace=True)
 
-        df.reset_index(drop=True,inplace=True) #reset index
+        df.reset_index(drop=True, inplace=True) #reset index
 
         self._df = df #retain final DataFrame as attribute
 
