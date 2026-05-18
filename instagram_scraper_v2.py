@@ -8,7 +8,10 @@ from browser_use import Agent, ChatGoogle
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from prompts.instagram_prompts import get_instagram_scrape_prompt
+from prompts.instagram_prompts import (
+    get_instagram_scrape_prompt,
+    get_instagram_scrape_prompt_with_previous_posts,
+)
 
 # Configuración para entornos interactivos (Notebooks)
 nest_asyncio.apply()
@@ -47,12 +50,36 @@ class InstagramScraperV2:
         """
         Ejecuta el agente para scrapear un hashtag específico.
         """
-        task_prompt = get_instagram_scrape_prompt(
-            hashtag=hashtag,
-            n_results=n_results,
-            user_email=self.user,
-            user_password=self.password,
-        )
+        # Comprobar si existen resultados previos para este hashtag
+        data_path = os.path.join("data", f"scrape_results_{hashtag}.csv")
+        previous_links = []
+
+        if os.path.exists(data_path):
+            try:
+                df_prev = pd.read_csv(data_path)
+                if "post_link" in df_prev.columns:
+                    previous_links = df_prev["post_link"].unique().tolist()
+            except Exception as e:
+                print(f"Error al cargar resultados previos: {e}")
+
+        if previous_links:
+            print(
+                f"Se encontraron {len(previous_links)} posts previos. Usando prompt con historial."
+            )
+            task_prompt = get_instagram_scrape_prompt_with_previous_posts(
+                hashtag=hashtag,
+                n_results=n_results,
+                user_email=self.user,
+                user_password=self.password,
+                previous_posts=previous_links,
+            )
+        else:
+            task_prompt = get_instagram_scrape_prompt(
+                hashtag=hashtag,
+                n_results=n_results,
+                user_email=self.user,
+                user_password=self.password,
+            )
 
         agent = Agent(
             task=task_prompt,
